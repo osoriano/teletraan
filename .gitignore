@@ -80,3 +80,5 @@ MANIFEST
 # Virtual Environments
 .venv
 docs/docs_generator/bin/
+
+.factorypath
