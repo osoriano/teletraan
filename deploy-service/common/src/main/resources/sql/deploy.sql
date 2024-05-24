@@ -10,7 +10,7 @@ CREATE TABLE IF NOT EXISTS environs (
     description   VARCHAR(1024),
     build_name    VARCHAR(64),
     branch        VARCHAR(64),
-    chatroom      VARCHAR(64),
+    chatroom      VARCHAR(128),
     deploy_id     VARCHAR(22),
     deploy_type   VARCHAR(32),
     max_parallel  INT                 NOT NULL,

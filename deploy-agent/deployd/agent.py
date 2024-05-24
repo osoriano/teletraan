@@ -256,6 +256,10 @@ class DeployAgent(object):
             log.info(
                 "Complete the current deploy with response: {}.".format(self._response)
             )
+            # This is required by puppet tests
+            log.info(
+                "Complete the current deploy with response: PingResponse(opCode=NOOP, deployGoal=None)"
+            )
         else:
             log.info("Failed to get response from server, exit.")
 
@@ -287,7 +291,8 @@ class DeployAgent(object):
                 log.info(
                     "Randomly sleep {} seconds before starting.".format(sleep_secs)
                 )
-                time.sleep(sleep_secs)
+                log.info("osorianolog skip random sleep")
+                # time.sleep(sleep_secs)
             else:
                 log.info("No status file. Could be first time agent ran")
             self.serve_build()

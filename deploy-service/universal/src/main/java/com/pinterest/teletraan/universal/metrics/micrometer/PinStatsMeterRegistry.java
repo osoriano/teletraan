@@ -63,7 +63,8 @@ public class PinStatsMeterRegistry extends OpenTSDBMeterRegistry {
     protected void publish() {
         for (List<Meter> batch : MeterPartition.partition(this, config.batchSize())) {
             try {
-                publisher.publish(batch);
+                // publisher.publish(batch)
+                LOG.info("dev skip metric publish");
             } catch (Throwable t) {
                 LOG.warn("failed to publish metrics", t);
             }

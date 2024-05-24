@@ -83,3 +83,15 @@ docs/docs_generator/bin/
 # Bazel
 bazel-*
 MODULE.bazel*
+.factorypath
+.classpath
+
+# Staging directories
+/configs
+/deploy-agent/osoriano
+/deploy-board/osoriano
+/deploy-board/venv
+/deploy-service/osoriano
+/deploy-service/teletraanservice/teletraan
+/package
+/deploy-board/manage_local.py
