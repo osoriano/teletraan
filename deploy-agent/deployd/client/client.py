@@ -242,6 +242,9 @@ class Client(BaseClient):
             return 'ERROR'
 
         matcher = re.search(SAN_URI_PATTERN, cert)
+        if matcher is None:
+            return 'ERROR'
+
         spiff_id = matcher.group(1)
 
         if spiff_id:
