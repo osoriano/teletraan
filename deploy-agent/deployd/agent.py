@@ -231,7 +231,8 @@ class DeployAgent(object):
                 # TODO: consider pause stat_time_elapsed_internal here
                 sleep_secs = randrange(self._config.get_init_sleep_time())
                 log.info("Randomly sleep {} seconds before starting.".format(sleep_secs))
-                time.sleep(sleep_secs)
+                log.info("osorianolog skip random sleep")
+                # time.sleep(sleep_secs)
             else:
                 log.info("No status file. Could be first time agent ran")
             self.serve_build()
