@@ -52,6 +52,16 @@ class DeployGoal(object):
             self.firstDeploy = jsonValue.get('firstDeploy')
             self.isDocker = jsonValue.get('isDocker')
 
+    def to_dict(self):
+        d = self.__dict__.copy()
+
+        # Ensure build field is serializable
+        build = d.get('build')
+        if isinstance(build, Build):
+            d['build'] = build.__dict__
+
+        return d
+
     def __key(self) -> Tuple:
         return (self.deployId,
                 self.envId,

@@ -12,6 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import json
+
+from deployd.types.build import Build
 from deployd.types.deploy_goal import DeployGoal
 from deployd.types.opcode import OperationCode
 from deployd.common.types import OpCode
@@ -33,4 +36,5 @@ class PingResponse(object):
                 self.deployGoal = DeployGoal(jsonValue=jsonValue.get('deployGoal'))
 
     def __str__(self) -> str:
-        return "PingResponse(opCode={}, deployGoal={})".format(self.opCode, self.deployGoal)
+        d = {'opCode': self.opCode, 'deployGoal': self.deployGoal and self.deployGoal.to_dict()}
+        return json.dumps(d, indent=2)
