@@ -24,6 +24,7 @@ class PingResponse(object):
     def __init__(self, jsonValue=None) -> None:
         self.opCode = OpCode.NOOP
         self.deployGoal = None
+        self.multiGoalResponse = None
 
         if jsonValue:
             # TODO: Only used for migration, should remove later
@@ -35,6 +36,34 @@ class PingResponse(object):
             if jsonValue.get('deployGoal'):
                 self.deployGoal = DeployGoal(jsonValue=jsonValue.get('deployGoal'))
 
+            if jsonValue.get('multiGoalResponse'):
+                self.multiGoalResponse = []
+                for jsonItem in jsonValue.get('multiGoalResponse'):
+
+                    # TODO: Only used for migration, should remove later
+                    if isinstance(jsonItem.get('opCode'), int):
+                        opCode = OperationCode._VALUES_TO_NAMES[jsonItem.get('opCode')]
+                    else:
+                        opCode = jsonItem.get('opCode')
+
+                    deployGoal = DeployGoal(jsonValue=jsonItem.get('deployGoal'))
+
+                    self.multiGoalResponse.append({
+                        'opCode': opCode,
+                        'deployGoal': deployGoal,
+                    })
+
+
     def __str__(self) -> str:
-        d = {'opCode': self.opCode, 'deployGoal': self.deployGoal and self.deployGoal.to_dict()}
+        mg = self.multiGoalResponse and [
+            {
+                'opCode': g['opCode'],
+                'deployGoal': g['deployGoal'] and g['deployGoal'].to_dict()
+            } for g in self.multiGoalResponse
+        ]
+        d = {
+            'opCode': self.opCode,
+            'deployGoal': self.deployGoal and self.deployGoal.to_dict(),
+            'multiGoalResponse': mg
+        }
         return json.dumps(d, indent=2)

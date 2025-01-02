@@ -16,6 +16,7 @@ import argparse
 from typing import List, Optional, Union
 import daemon
 import logging
+import multiprocessing
 import os
 import sys
 from random import randrange
@@ -41,11 +42,12 @@ from deployd.types.ping_response import PingResponse
 log: logging.Logger = logging.getLogger(name=MAIN_LOGGER)
 
 class PingServer(object):
-    def __init__(self, ag) -> None:
+    def __init__(self, ag, single_deploy_goal_response) -> None:
         self._agent = ag
+        self._single_deploy_goal_response = single_deploy_goal_response
 
     def __call__(self, deploy_report) -> int:
-        return self._agent.update_deploy_status(deploy_report=deploy_report)
+        return self._agent.update_deploy_status(deploy_report=deploy_report, single_deploy_goal_response=self._single_deploy_goal_response)
 
 
 class AgentRunMode(object):
@@ -62,12 +64,12 @@ class DeployAgent(object):
     _config = None
     _env_status = None
 
-    def __init__(self, client, estatus=None, conf=None, executor=None, helper=None) -> None:
+    def __init__(self, client, estatus=None, conf=None, helper=None) -> None:
         self._response = None
         # a map maintains env_name -> deploy_status
         self._envs = {}
         self._config = conf or Config()
-        self._executor = executor
+        self._executor = None
         self.stat_time_elapsed_internal = TimeElapsed()
         self.stat_time_elapsed_total = TimeElapsed()
         self.stat_stage_time_elapsed = None
@@ -108,13 +110,16 @@ class DeployAgent(object):
             tags['status_code'] = deploy_report.status_code
         create_sc_increment('deployd.stats.deploy.status.sum', tags=tags)
 
-    def serve_build(self) -> None:
+    def serve_build(self, single_deploy_goal_response=None, mpq=None) -> None:
         """This is the main function of the ``DeployAgent``.
         """
 
         log.info('The deploy agent is starting.')
-        if not self._executor:
-            self._executor = Executor(callback=PingServer(self), config=self._config)
+        if single_deploy_goal_response:
+            log.info(f'osorianolog starting single deploy goal: {single_deploy_goal_response["deployGoal"].envName}')
+
+        self._executor = Executor(callback=PingServer(self, single_deploy_goal_response), config=self._config)
+
         # include healthStatus info for each container
         if len(self._envs) > 0:
             for status in self._envs.values():
@@ -148,7 +153,14 @@ class DeployAgent(object):
                     log.exception('get exception while trying to check container health: {}'.format(traceback.format_exc()))
                     continue
         # start to ping server to get the latest deploy goal
-        self._response = self._client.send_reports(self._envs)
+        if single_deploy_goal_response:
+            self._response = PingResponse()
+            self._response.opCode = single_deploy_goal_response['opCode']
+            self._response.deployGoal = single_deploy_goal_response['deployGoal']
+        else:
+            # self._response = self._client.send_reports(self._envs, first_run=False)
+            self._response = self._client.send_reports(self._envs, first_run=self.first_run)
+
         # we only need to send RESET once in one deploy-agent run
         if len(self._envs) > 0:
             for status in self._envs.values():
@@ -157,11 +169,38 @@ class DeployAgent(object):
             self._env_status.dump_envs(self._envs)
 
         if self._response:
+            if self._response.multiGoalResponse:
+                mpq = multiprocessing.Queue()
+                processes = [
+                    multiprocessing.Process(target=self.serve_build, args=(single_deploy_goal_response, mpq))
+                    for single_deploy_goal_response in self._response.multiGoalResponse]
+
+                for p in processes:
+                    p.start()
+
+                for p in processes:
+                    p.join()
+
+                for p in processes:
+                    if p.exitcode != 0:
+                        log.error(f"osorianolog subprocess ended with non-zero exit code: {p.exitcode}")
+                log.info("Finished subprocesses")
+
+                log.info(f"osoriano begin envs: {self._envs}")
+                combined_envs = {}
+                while not mpq.empty():
+                    env = mpq.get()
+                    log.info(f"osoriano processing env: {env}")
+                    combined_envs.update(env)
+
+                self._env_status.dump_envs(combined_envs)
+                return
+
             report = self._update_internal_deploy_goal(self._response)
             # failed to update
             if report.status_code != AgentStatus.SUCCEEDED:
-                self._update_ping_reports(deploy_report=report)
-                self._client.send_reports(self._envs)
+                self._update_ping_reports(deploy_report=report, single_deploy_goal_response=single_deploy_goal_response)
+                self._client.send_reports(self._envs, single_deploy_goal_response=single_deploy_goal_response)
                 return
 
         while self._response and self._response.opCode and self._response.opCode != OpCode.NOOP:
@@ -192,7 +231,7 @@ class DeployAgent(object):
 
             self._send_deploy_status_stats(deploy_report)
 
-            if PingStatus.PING_FAILED == self.update_deploy_status(deploy_report):
+            if PingStatus.PING_FAILED == self.update_deploy_status(deploy_report, single_deploy_goal_response):
                 return
 
             if deploy_report.status_code in [AgentStatus.AGENT_FAILED,
@@ -206,6 +245,8 @@ class DeployAgent(object):
         if self._response and self._response.deployGoal:
             self._update_internal_deploy_goal(self._response)
 
+        if mpq:
+            mpq.put(self._envs)
         if self._response:
             log.info('Complete the current deploy with response: {}.'.format(self._response))
         else:
@@ -308,9 +349,13 @@ class DeployAgent(object):
             return ['deploy-stager', '-f', self._config.get_config_filename(),
                     '-v', build, '-t', self._config.get_target(), "-e", env_name]
 
-    def _update_ping_reports(self, deploy_report) -> None:
+    def _update_ping_reports(self, deploy_report, single_deploy_goal_response=None) -> None:
         if self._curr_report:
             self._curr_report.update_by_deploy_report(deploy_report)
+
+        if single_deploy_goal_response:
+            # single env. Don't dump envs
+            return
 
         # if we failed to dump the status to the disk. We should notify the server
         # as agent failure. We set the current report to be agent failure, so server would
@@ -322,9 +367,9 @@ class DeployAgent(object):
                              error_code=1,
                              output_msg='Failed to dump status to the disk'))
 
-    def update_deploy_status(self, deploy_report) -> int:
-        self._update_ping_reports(deploy_report=deploy_report)
-        response = self._client.send_reports(self._envs)
+    def update_deploy_status(self, deploy_report, single_deploy_goal_response=None) -> int:
+        self._update_ping_reports(deploy_report=deploy_report, single_deploy_goal_response=single_deploy_goal_response)
+        response = self._client.send_reports(self._envs, single_deploy_goal_response=single_deploy_goal_response)
 
         # if we failed to get any response from server, return failure but don't reset previous response
         if response is None:
@@ -335,8 +380,8 @@ class DeployAgent(object):
             self._response = response
             report = self._update_internal_deploy_goal(self._response)
             if report.status_code != AgentStatus.SUCCEEDED:
-                self._update_ping_reports(report)
-                self._response = self._client.send_reports(self._envs)
+                self._update_ping_reports(report, single_deploy_goal_response=single_deploy_goal_response)
+                self._response = self._client.send_reports(self._envs, single_deploy_goal_response=single_deploy_goal_response)
                 return PingStatus.PLAN_CHANGED
 
             if plan_changed:

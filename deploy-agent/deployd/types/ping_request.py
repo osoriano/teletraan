@@ -20,7 +20,7 @@ from deployd.types.agent_status import AgentStatus
 class PingRequest(object):
 
     def __init__(self, hostId=None, hostName=None, hostIp=None, groups=None, reports=None,
-                agentVersion=None, autoscalingGroup=None, availabilityZone=None, ec2Tags=None, stageType=None, accountId=None):
+                agentVersion=None, autoscalingGroup=None, availabilityZone=None, ec2Tags=None, multiGoal=False, processSingleEnvId=None, stageType=None, accountId=None):
         self.hostId = hostId
         self.hostName = hostName
         self.hostIp = hostIp
@@ -30,6 +30,8 @@ class PingRequest(object):
         self.autoscalingGroup = autoscalingGroup
         self.availabilityZone = availabilityZone
         self.ec2Tags = ec2Tags
+        self.multiGoal = multiGoal
+        self.processSingleEnvId = processSingleEnvId
         self.stageType = stageType
         self.accountId = accountId
 
@@ -52,6 +54,10 @@ class PingRequest(object):
             ping_requests["accountId"] = self.accountId
         if self.ec2Tags:
             ping_requests["ec2Tags"] = self.ec2Tags
+        if self.multiGoal:
+            ping_requests["multiGoal"] = self.multiGoal
+        if self.processSingleEnvId:
+            ping_requests["processSingleEnvId"] = self.processSingleEnvId
 
         ping_requests["reports"] = []
         for report in self.reports:

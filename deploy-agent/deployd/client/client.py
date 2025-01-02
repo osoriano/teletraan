@@ -223,7 +223,7 @@ class Client(BaseClient):
         with open(file_path, 'w') as f:
             f.write(str(obj))
 
-    def send_reports(self, env_reports=None) -> Optional[PingResponse]:
+    def send_reports(self, env_reports=None, first_run=False, single_deploy_goal_response=None) -> Optional[PingResponse]:
         try:
             if self._read_host_info():
                 reports = [status.report for status in env_reports.values()]
@@ -242,6 +242,8 @@ class Client(BaseClient):
                                         autoscalingGroup=self._autoscaling_group,
                                         availabilityZone=self._availability_zone,
                                         ec2Tags=self._ec2_tags,
+                                        multiGoal=first_run,
+                                        processSingleEnvId=single_deploy_goal_response and single_deploy_goal_response['deployGoal'].envId,
                                         stageType=self._stage_type,
                                         accountId=self._account_id)
 
