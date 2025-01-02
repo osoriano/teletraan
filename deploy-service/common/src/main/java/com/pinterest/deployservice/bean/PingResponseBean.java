@@ -15,27 +15,21 @@
  */
 package com.pinterest.deployservice.bean;
 
+import java.util.List;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+@Data
 public class PingResponseBean {
     private OpCode opCode;
     private DeployGoalBean deployGoal;
-
-    public OpCode getOpCode() {
-        return opCode;
-    }
-
-    public void setOpCode(OpCode opCode) {
-        this.opCode = opCode;
-    }
-
-    public DeployGoalBean getDeployGoal() {
-        return deployGoal;
-    }
-
-    public void setDeployGoal(DeployGoalBean deployGoal) {
-        this.deployGoal = deployGoal;
-    }
+    private List<DeployGoalResponseBean> multiGoalResponse;
 
     @Override
     public String toString() {

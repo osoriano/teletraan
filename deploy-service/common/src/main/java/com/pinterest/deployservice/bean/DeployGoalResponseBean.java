@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2016-2024 Pinterest, Inc.
+ * Copyright (c) 2016-2025 Pinterest, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,8 +16,6 @@
 package com.pinterest.deployservice.bean;
 
 import java.util.List;
-import java.util.Set;
-import javax.validation.constraints.NotEmpty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -28,39 +26,13 @@ import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 @NoArgsConstructor
 @AllArgsConstructor
 @Data
-public class PingRequestBean {
-    @NotEmpty private String hostId;
-
-    private String hostName;
-
-    private String hostIp;
-
-    private String autoscalingGroup;
-
-    private String availabilityZone;
-
-    private String ec2Tags;
-
-    private String agentVersion;
-
-    private EnvType stageType;
-
-    private Set<String> groups;
-
-    private String accountId;
-
-    private NormandieStatus normandieStatus;
-
-    private KnoxStatus knoxStatus;
-
-    private boolean multiGoal;
-
-    private String processSingleEnvId;
-
-    private List<PingReportBean> reports;
+public class DeployGoalResponseBean {
+    private OpCode opCode;
+    private DeployGoalBean deployGoal;
 
     @Override
     public String toString() {
         return ReflectionToStringBuilder.toString(this);
     }
 }
+

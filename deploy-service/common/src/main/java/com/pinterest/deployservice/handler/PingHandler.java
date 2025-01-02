@@ -31,6 +31,7 @@ import com.pinterest.deployservice.bean.DeployBean;
 import com.pinterest.deployservice.bean.DeployConstraintBean;
 import com.pinterest.deployservice.bean.DeployConstraintType;
 import com.pinterest.deployservice.bean.DeployGoalBean;
+import com.pinterest.deployservice.bean.DeployGoalResponseBean;
 import com.pinterest.deployservice.bean.DeployStage;
 import com.pinterest.deployservice.bean.EnvType;
 import com.pinterest.deployservice.bean.EnvironBean;
@@ -887,7 +888,8 @@ public class PingHandler {
                         envs,
                         reports,
                         agents,
-                        ec2Tags);
+                        ec2Tags,
+                        pingRequest.getProcessSingleEnvId());
         analyst.analysis();
 
         PingResponseBean response = null;
@@ -929,14 +931,23 @@ public class PingHandler {
                                 hostName,
                                 updateBean);
                         updateBeans.put(updateBean.getEnv_id(), updateBean);
-                        response = generateInstallResponse(installCandidate);
-                        break;
+                        if (pingRequest.isMultiGoal()) {
+                            if (response == null) {
+                                response = new PingResponseBean();
+                            }
+                            appendToMultiGoalResponse(response, installCandidate);
+                        } else {
+                            response = generateInstallResponse(installCandidate);
+                            break;
+                        }
                     } else if (updateBean.getFirst_deploy()) {
                         LOG.debug(
                                 "Host {} needs to wait for first deploy of env {}",
                                 hostName,
                                 updateBean.getEnv_id());
-                        break;
+                        if (!pingRequest.isMultiGoal()) {
+                            break;
+                        }
                     } else {
                         LOG.debug(
                                 "Host {} needs to wait for env {}. Try next env",
@@ -949,8 +960,15 @@ public class PingHandler {
                             hostName,
                             updateBean);
                     updateBeans.put(updateBean.getEnv_id(), updateBean);
-                    response = generateInstallResponse(installCandidate);
-                    break;
+                    if (pingRequest.isMultiGoal()) {
+                        if (response == null) {
+                            response = new PingResponseBean();
+                        }
+                        appendToMultiGoalResponse(response, installCandidate);
+                    } else {
+                        response = generateInstallResponse(installCandidate);
+                        break;
+                    }
                 }
             }
         }
@@ -1192,5 +1210,26 @@ public class PingHandler {
             ret = (int) totalHosts;
         }
         return ret;
+    }
+
+    /**
+     * Append the installCandidate to the multiGoalResponse field
+     */
+    private void appendToMultiGoalResponse(
+            PingResponseBean response,
+            GoalAnalyst.InstallCandidate installCandidate) throws Exception {
+
+        List<DeployGoalResponseBean> multiGoalResponse = response.getMultiGoalResponse();
+        if (multiGoalResponse == null) {
+            multiGoalResponse = new ArrayList<>();
+            response.setMultiGoalResponse(multiGoalResponse);
+        }
+
+        PingResponseBean installResponse = generateInstallResponse(installCandidate);
+        DeployGoalResponseBean installDeploy = new DeployGoalResponseBean(
+                installResponse.getOpCode(),
+                installResponse.getDeployGoal());
+
+        multiGoalResponse.add(installDeploy);
     }
 }
