@@ -41,6 +41,15 @@ else:
         pass
 
 log = logging.getLogger(__name__)
+default_tags = {
+    'deploy_agent_version': __version__,
+    # todo check if null values can be sent
+    'osorianolog': None,
+}
+
+
+def add_default_tag(key, val):
+    default_tags[key] = val
 
 
 class DefaultStatsdTimer(object):
@@ -109,6 +118,7 @@ def create_sc_gauge(name, value, sample_rate=1.0, tags=None) -> None:
 
 def send_statsboard_metric(name, value, tags=None) -> None:
     tags['host'] = socket.gethostname()
+    tags.update(default_tags)
     tags_params = [f"{tag}={tags[tag]}" for tag in tags]
     tags_str = ",".join(tags_params)
     url = (
@@ -269,12 +279,9 @@ class MetricClient:
             :param: tags as dict
             return: dict
         """
-        if not __version__:
-            # defensive case, should not be hit
-            return tags
-        if __version__ and not tags:
+        if tags is None:
             tags = dict()
-        tags['deploy_agent_version'] = __version__
+        tags.update(default_tags)
         return tags
 
     @staticmethod
