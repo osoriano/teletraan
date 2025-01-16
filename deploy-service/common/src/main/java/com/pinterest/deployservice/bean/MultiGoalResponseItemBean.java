@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2016-2025 Pinterest, Inc.
+ * Copyright (c) 2025 Pinterest, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,6 @@
  */
 package com.pinterest.deployservice.bean;
 
-import java.util.Map;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -26,21 +25,9 @@ import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 @NoArgsConstructor
 @AllArgsConstructor
 @Data
-public class DeployGoalBean {
-    private String deployId;
-    private DeployType deployType;
-    private String envId;
-    private String envName;
-    private String stageName;
-    private Integer systemPriority;
-    private EnvType stageType;
-    private DeployStage deployStage;
-    private BuildBean build;
-    private String deployAlias;
-    private Map<String, String> agentConfigs;
-    private Map<String, String> scriptVariables;
-    private Boolean firstDeploy;
-    private Boolean isDocker;
+public class MultiGoalResponseItemBean {
+    private OpCode opCode;
+    private DeployGoalBean deployGoal;
 
     @Override
     public String toString() {

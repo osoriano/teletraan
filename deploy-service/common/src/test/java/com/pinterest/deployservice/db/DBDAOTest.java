@@ -571,8 +571,15 @@ public class DBDAOTest {
         EnvironBean envBean = genDefaultEnvBean("env-1", "s-1", "prod", "deploy-1");
         environDAO.insert(envBean);
 
-        // Test getById
+        // Test multi_goal Column
+        assertEquals(envBean.getMulti_goal(), null);
         EnvironBean envBean2 = environDAO.getById(envBean.getEnv_id());
+        // The db defaults the column to false
+        assertEquals(envBean2.getMulti_goal(), false);
+        // Update the pojo to be in sync with db
+        envBean.setMulti_goal(envBean2.getMulti_goal());
+
+        // Test getById
         assertTrue(EqualsBuilder.reflectionEquals(envBean, envBean2));
 
         // Test getByStage
