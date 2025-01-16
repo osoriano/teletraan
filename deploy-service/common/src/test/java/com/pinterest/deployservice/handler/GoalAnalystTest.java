@@ -47,10 +47,14 @@ public class GoalAnalystTest {
     private Map<String, AgentBean> agents;
 
     AgentBean genDefaultAgent() {
+        return genAgent("foo");
+    }
+
+    AgentBean genAgent(String name) {
         AgentBean agentBean = new AgentBean();
-        agentBean.setEnv_id("foo");
-        agentBean.setDeploy_id("foo");
-        agentBean.setHost_name("foo");
+        agentBean.setEnv_id(name);
+        agentBean.setDeploy_id(name);
+        agentBean.setHost_name(name);
         agentBean.setDeploy_stage(DeployStage.SERVING_BUILD);
         agentBean.setState(AgentState.NORMAL);
         agentBean.setFail_count(0);
@@ -60,9 +64,13 @@ public class GoalAnalystTest {
     }
 
     PingReportBean genDefaultReport() {
+        return genReport("foo");
+    }
+
+    PingReportBean genReport(String name) {
         PingReportBean report = new PingReportBean();
-        report.setDeployId("foo");
-        report.setEnvId("foo");
+        report.setDeployId(name);
+        report.setEnvId(name);
         report.setDeployStage(DeployStage.SERVING_BUILD);
         report.setAgentStatus(AgentStatus.SUCCEEDED);
 
@@ -70,13 +78,17 @@ public class GoalAnalystTest {
     }
 
     EnvironBean genDefaultEnvBean() {
+        return genEnvBean("foo");
+    }
+
+    EnvironBean genEnvBean(String name) {
         EnvironBean envBean = new EnvironBean();
-        envBean.setEnv_id("foo");
-        envBean.setEnv_name("foo");
-        envBean.setStage_name("foo");
+        envBean.setEnv_id(name);
+        envBean.setEnv_name(name);
+        envBean.setStage_name(name);
         envBean.setEnv_state(EnvState.NORMAL);
         envBean.setPriority(DeployPriority.NORMAL);
-        envBean.setDeploy_id("foo");
+        envBean.setDeploy_id(name);
         envBean.setDeploy_type(DeployType.REGULAR);
         return envBean;
     }
@@ -97,7 +109,8 @@ public class GoalAnalystTest {
 
         GoalAnalyst analyst =
                 new GoalAnalyst(
-                        null, null, null, null, null, "foo", "id-1", envs, reports, agents, null);
+                        null, null, null, null, null, "foo", "id-1", envs, reports, agents, null,
+                        null);
         analyst.analysis();
 
         assertEquals(analyst.getNeedUpdateAgents().size(), 0);
@@ -118,7 +131,8 @@ public class GoalAnalystTest {
 
         GoalAnalyst analyst =
                 new GoalAnalyst(
-                        null, null, null, null, null, "foo", "id-1", envs, reports, agents, null);
+                        null, null, null, null, null, "foo", "id-1", envs, reports, agents, null,
+                        null);
         analyst.analysis();
 
         assertEquals(analyst.getNeedUpdateAgents().size(), 1);
@@ -142,7 +156,8 @@ public class GoalAnalystTest {
 
         GoalAnalyst analyst =
                 new GoalAnalyst(
-                        null, null, null, null, null, "foo", "id-1", envs, reports, agents, null);
+                        null, null, null, null, null, "foo", "id-1", envs, reports, agents, null,
+                        null);
         analyst.analysis();
 
         assertEquals(analyst.getNeedUpdateAgents().size(), 1);
@@ -161,7 +176,8 @@ public class GoalAnalystTest {
 
         GoalAnalyst analyst =
                 new GoalAnalyst(
-                        null, null, null, null, null, "foo", "id-1", envs, reports, agents, null);
+                        null, null, null, null, null, "foo", "id-1", envs, reports, agents, null,
+                        null);
         analyst.analysis();
 
         assertEquals(analyst.getNeedUpdateAgents().size(), 1);
@@ -181,7 +197,8 @@ public class GoalAnalystTest {
 
         GoalAnalyst analyst =
                 new GoalAnalyst(
-                        null, null, null, null, null, "foo", "id-1", envs, reports, agents, null);
+                        null, null, null, null, null, "foo", "id-1", envs, reports, agents, null,
+                        null);
         analyst.analysis();
 
         assertEquals(analyst.getNeedUpdateAgents().size(), 1);
@@ -210,7 +227,8 @@ public class GoalAnalystTest {
 
         GoalAnalyst analyst =
                 new GoalAnalyst(
-                        null, null, null, null, null, "foo", "id-1", envs, reports, agents, null);
+                        null, null, null, null, null, "foo", "id-1", envs, reports, agents, null,
+                        null);
         analyst.analysis();
 
         assertEquals(analyst.getNeedUpdateAgents().size(), 1);
@@ -230,7 +248,8 @@ public class GoalAnalystTest {
         // no report, no agents
         GoalAnalyst analyst =
                 new GoalAnalyst(
-                        null, null, null, null, null, "foo", "id-1", envs, reports, agents, null);
+                        null, null, null, null, null, "foo", "id-1", envs, reports, agents, null,
+                        null);
         analyst.analysis();
 
         assertEquals(analyst.getNeedUpdateAgents().size(), 0);
@@ -264,6 +283,7 @@ public class GoalAnalystTest {
                         envs,
                         reports,
                         agents,
+                        null,
                         null);
         analyst.analysis();
 
@@ -299,6 +319,7 @@ public class GoalAnalystTest {
                         envs,
                         reports,
                         agents,
+                        null,
                         null);
         analyst.analysis();
 
@@ -325,7 +346,8 @@ public class GoalAnalystTest {
         agents.put(agent.getEnv_id(), agent);
         GoalAnalyst analyst =
                 new GoalAnalyst(
-                        null, null, null, null, null, "foo", "id-1", envs, reports, agents, null);
+                        null, null, null, null, null, "foo", "id-1", envs, reports, agents, null,
+                        null);
         analyst.analysis();
 
         assertEquals(analyst.getNeedUpdateAgents().size(), 1);
@@ -352,7 +374,8 @@ public class GoalAnalystTest {
         agents.put(agent.getEnv_id(), agent);
         GoalAnalyst analyst =
                 new GoalAnalyst(
-                        null, null, null, null, null, "foo", "id-1", envs, reports, agents, null);
+                        null, null, null, null, null, "foo", "id-1", envs, reports, agents, null,
+                        null);
         analyst.analysis();
 
         assertEquals(analyst.getNeedUpdateAgents().size(), 1);
@@ -366,7 +389,8 @@ public class GoalAnalystTest {
         reports.get(report.getEnvId()).setDeployStage(DeployStage.SERVING_BUILD);
         GoalAnalyst analyst1 =
                 new GoalAnalyst(
-                        null, null, null, null, null, "foo", "id-1", envs, reports, agents, null);
+                        null, null, null, null, null, "foo", "id-1", envs, reports, agents, null,
+                        null);
         analyst1.analysis();
         assertEquals(analyst1.getNeedUpdateAgents().size(), 1);
         assertEquals(analyst1.getNeedDeleteAgentEnvIds().size(), 0);
@@ -390,7 +414,8 @@ public class GoalAnalystTest {
         agents.put(agent.getEnv_id(), agent);
         GoalAnalyst analyst =
                 new GoalAnalyst(
-                        null, null, null, null, null, "foo", "id-1", envs, reports, agents, null);
+                        null, null, null, null, null, "foo", "id-1", envs, reports, agents, null,
+                        null);
         analyst.analysis();
 
         assertEquals(analyst.getNeedUpdateAgents().size(), 1);
@@ -418,7 +443,8 @@ public class GoalAnalystTest {
 
         GoalAnalyst analyst =
                 new GoalAnalyst(
-                        null, null, null, null, null, "foo", "id-1", envs, reports, agents, null);
+                        null, null, null, null, null, "foo", "id-1", envs, reports, agents, null,
+                        null);
         analyst.analysis();
 
         assertEquals(analyst.getNeedUpdateAgents().size(), 1);
@@ -444,7 +470,8 @@ public class GoalAnalystTest {
 
         GoalAnalyst analyst =
                 new GoalAnalyst(
-                        null, null, null, null, null, "foo", "id-1", envs, reports, agents, null);
+                        null, null, null, null, null, "foo", "id-1", envs, reports, agents, null,
+                        null);
         analyst.analysis();
 
         assertEquals(analyst.getNeedUpdateAgents().size(), 1);
@@ -470,7 +497,8 @@ public class GoalAnalystTest {
 
         GoalAnalyst analyst =
                 new GoalAnalyst(
-                        null, null, null, null, null, "foo", "id-1", envs, reports, agents, null);
+                        null, null, null, null, null, "foo", "id-1", envs, reports, agents, null,
+                        null);
         analyst.analysis();
 
         assertEquals(analyst.getNeedUpdateAgents().size(), 1);
@@ -501,7 +529,8 @@ public class GoalAnalystTest {
 
         GoalAnalyst analyst =
                 new GoalAnalyst(
-                        null, null, null, null, null, "foo", "id-1", envs, reports, agents, null);
+                        null, null, null, null, null, "foo", "id-1", envs, reports, agents, null,
+                        null);
         analyst.analysis();
 
         assertEquals(analyst.getNeedUpdateAgents().size(), 1);
@@ -528,7 +557,8 @@ public class GoalAnalystTest {
 
         GoalAnalyst analyst =
                 new GoalAnalyst(
-                        null, null, null, null, null, "foo", "id-1", envs, reports, agents, null);
+                        null, null, null, null, null, "foo", "id-1", envs, reports, agents, null,
+                        null);
         analyst.analysis();
 
         assertEquals(analyst.getNeedUpdateAgents().size(), 1);
@@ -560,7 +590,8 @@ public class GoalAnalystTest {
 
         GoalAnalyst analyst =
                 new GoalAnalyst(
-                        null, null, null, null, null, "foo", "id-1", envs, reports, agents, null);
+                        null, null, null, null, null, "foo", "id-1", envs, reports, agents, null,
+                        null);
         analyst.analysis();
 
         assertEquals(analyst.getNeedUpdateAgents().size(), 1);
@@ -581,7 +612,8 @@ public class GoalAnalystTest {
 
         GoalAnalyst analyst =
                 new GoalAnalyst(
-                        null, null, null, null, null, "foo", "id-1", envs, reports, agents, null);
+                        null, null, null, null, null, "foo", "id-1", envs, reports, agents, null,
+                        null);
         analyst.analysis();
 
         assertEquals(analyst.getNeedUpdateAgents().size(), 0);
@@ -604,7 +636,8 @@ public class GoalAnalystTest {
 
         GoalAnalyst analyst =
                 new GoalAnalyst(
-                        null, null, null, null, null, "foo", "id-1", envs, reports, agents, null);
+                        null, null, null, null, null, "foo", "id-1", envs, reports, agents, null,
+                        null);
         analyst.analysis();
 
         assertEquals(analyst.getNeedUpdateAgents().size(), 1);
@@ -621,7 +654,8 @@ public class GoalAnalystTest {
 
         GoalAnalyst analyst =
                 new GoalAnalyst(
-                        null, null, null, null, null, "foo", "id-1", envs, reports, agents, null);
+                        null, null, null, null, null, "foo", "id-1", envs, reports, agents, null,
+                        null);
         analyst.analysis();
 
         assertEquals(analyst.getNeedUpdateAgents().size(), 0);
@@ -647,7 +681,7 @@ public class GoalAnalystTest {
         GoalAnalyst analyst =
                 new GoalAnalyst(
                         null, null, deployDAO, null, null, "foo", "id-1", envs, reports, agents,
-                        null);
+                        null, null);
         analyst.analysis();
         Mockito.verify(deployDAO).getById("bar");
 
@@ -678,7 +712,7 @@ public class GoalAnalystTest {
         GoalAnalyst analyst =
                 new GoalAnalyst(
                         null, null, deployDAO, null, null, "foo", "id-1", envs, reports, agents,
-                        null);
+                        null, null);
         analyst.analysis();
 
         Mockito.verify(deployDAO).getById("bar");
@@ -868,7 +902,8 @@ public class GoalAnalystTest {
 
         GoalAnalyst analyst =
                 new GoalAnalyst(
-                        null, null, null, null, null, "foo", "id-1", envs, reports, agents, null);
+                        null, null, null, null, null, "foo", "id-1", envs, reports, agents, null,
+                        null);
         analyst.analysis();
 
         assertEquals(analyst.getNeedUpdateAgents().size(), 13);
@@ -915,7 +950,8 @@ public class GoalAnalystTest {
         agent1.setFirst_deploy(true);
         GoalAnalyst analyst =
                 new GoalAnalyst(
-                        null, null, null, null, null, "foo", "id-1", envs, reports, agents, null);
+                        null, null, null, null, null, "foo", "id-1", envs, reports, agents, null,
+                        null);
         analyst.analysis();
 
         // Making sure the candidates are sorted as expected
@@ -927,7 +963,8 @@ public class GoalAnalystTest {
         envBean3.setDeploy_type(DeployType.ROLLBACK);
         analyst =
                 new GoalAnalyst(
-                        null, null, null, null, null, "foo", "id-1", envs, reports, agents, null);
+                        null, null, null, null, null, "foo", "id-1", envs, reports, agents, null,
+                        null);
         analyst.analysis();
 
         // First deploy
@@ -940,7 +977,8 @@ public class GoalAnalystTest {
 
         analyst =
                 new GoalAnalyst(
-                        null, null, null, null, null, "foo", "id-1", envs, reports, agents, null);
+                        null, null, null, null, null, "foo", "id-1", envs, reports, agents, null,
+                        null);
         analyst.analysis();
         candidates = analyst.getInstallCandidates();
         assertEquals(candidates.get(0).env.getEnv_id(), "e3");
@@ -1039,7 +1077,8 @@ public class GoalAnalystTest {
 
         GoalAnalyst analyst =
                 new GoalAnalyst(
-                        null, null, null, null, null, "foo", "id-1", envs, reports, agents, null);
+                        null, null, null, null, null, "foo", "id-1", envs, reports, agents, null,
+                        null);
         analyst.analysis();
         assertEquals(analyst.getInstallCandidates().size(), 6);
 
@@ -1065,7 +1104,8 @@ public class GoalAnalystTest {
 
         GoalAnalyst analyst =
                 new GoalAnalyst(
-                        null, null, null, null, null, "foo", "id-1", envs, reports, agents, null);
+                        null, null, null, null, null, "foo", "id-1", envs, reports, agents, null,
+                        null);
         analyst.analysis();
 
         assertEquals(analyst.getNeedUpdateAgents().size(), 1);
@@ -1093,7 +1133,8 @@ public class GoalAnalystTest {
 
         GoalAnalyst analyst =
                 new GoalAnalyst(
-                        null, null, null, null, null, "foo", "id-1", envs, reports, agents, null);
+                        null, null, null, null, null, "foo", "id-1", envs, reports, agents, null,
+                        null);
         analyst.analysis();
 
         assertEquals(analyst.getNeedUpdateAgents().size(), 1);
@@ -1120,7 +1161,8 @@ public class GoalAnalystTest {
 
         GoalAnalyst analyst =
                 new GoalAnalyst(
-                        null, null, null, null, null, "foo", "id-1", envs, reports, agents, null);
+                        null, null, null, null, null, "foo", "id-1", envs, reports, agents, null,
+                        null);
         analyst.analysis();
 
         assertEquals(analyst.getNeedUpdateAgents().size(), 1);
@@ -1128,5 +1170,51 @@ public class GoalAnalystTest {
         assertEquals(needUpdateAgents.getState(), AgentState.STOP);
         assertEquals(analyst.getNeedDeleteAgentEnvIds().size(), 0);
         assertEquals(analyst.getInstallCandidates().size(), 0);
+    }
+
+    @Test
+    public void testProcessSingleEnvId() throws Exception {
+        // Create env1 and env2, with env1 having higher priority
+        EnvironBean envBean1 = genEnvBean("env1");
+        envBean1.setSystem_priority(1);
+        envs.put(envBean1.getEnv_id(), envBean1);
+        EnvironBean envBean2 = genEnvBean("env2");
+        envBean2.setSystem_priority(2);
+        envs.put(envBean2.getEnv_id(), envBean2);
+
+        PingReportBean report1 = genReport("env1");
+        report1.setDeployStage(DeployStage.PRE_RESTART);
+        reports.put(report1.getEnvId(), report1);
+        PingReportBean report2 = genReport("env2");
+        report2.setDeployStage(DeployStage.PRE_RESTART);
+        reports.put(report2.getEnvId(), report2);
+
+        // Specify env2 id to the analyst
+        GoalAnalyst analyst =
+                new GoalAnalyst(
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        "foo",
+                        "id-1",
+                        envs,
+                        reports,
+                        agents,
+                        null,
+                        envBean2.getEnv_id());
+        analyst.analysis();
+
+        // Ensure only env2 is returned
+        assertEquals(analyst.getNeedUpdateAgents().size(), 1);
+        assertEquals(analyst.getNeedDeleteAgentEnvIds().size(), 0);
+        assertEquals(analyst.getInstallCandidates().size(), 1);
+        GoalAnalyst.InstallCandidate candidate = analyst.getInstallCandidates().get(0);
+        assertEquals(candidate.env.getEnv_id(), envBean2.getEnv_id());
+        assertEquals(candidate.needWait, false);
+        assertEquals(candidate.updateBean.getDeploy_stage(), DeployStage.RESTARTING);
+        assertEquals(candidate.updateBean.getStatus(), AgentStatus.UNKNOWN);
+        assertEquals(candidate.updateBean.getLast_err_no(), new Integer(0));
     }
 }
