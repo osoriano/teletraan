@@ -38,7 +38,6 @@ from deployd.common.utils import (
     get_telefig_version,
     get_container_health_info,
     check_prereqs,
-    is_first_run,
 )
 from deployd.common.utils import uptime as utils_uptime, listen as utils_listen
 from deployd.common.executor import Executor
@@ -633,7 +632,6 @@ def main():
     args: argparse.Namespace = parser.parse_args()
 
     config = Config(filenames=args.config_file)
-    first_run = is_first_run(config)
 
     if IS_PINTEREST:
         import pinlogger
@@ -641,7 +639,7 @@ def main():
         pinlogger.initialize_logger(logger_filename="deploy-agent.log")
         pinlogger.LOG_TO_STDERR = True
         add_default_tag("telefig_version", get_telefig_version())
-        add_default_tag("first_run", first_run)
+        add_default_tag("first_run", config.first_run)
     else:
         log_filename = os.path.join(config.get_log_directory(), "deploy-agent.log")
         logging.basicConfig(
@@ -650,7 +648,7 @@ def main():
             format="%(asctime)s %(name)s:%(lineno)d %(levelname)s %(message)s",
         )
 
-    if not check_prereqs(config, first_run):
+    if not check_prereqs(config):
         log.warning(
             "Deploy agent cannot start because the prerequisites on puppet did not meet."
         )

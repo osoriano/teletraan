@@ -27,23 +27,23 @@ from deployd.common.utils import (
     "deployd.common.utils.send_statsboard_metric", new=mock.Mock(return_value=None)
 )
 class TestCommonUtils(TestCase):
-    @classmethod
-    def setUpClass(cls):
-        cls.estatus = mock.Mock()
-        cls.estatus.load_envs = mock.Mock(return_value=None)
-        cls.config = mock.Mock()
-        cls.config.load_env_and_configs = mock.Mock()
-        cls.config.get_agent_directory = mock.Mock(return_value="/tmp/deployd/")
-        cls.config.get_builds_directory = mock.Mock(return_value="/tmp/deployd/builds/")
-        cls.config.get_log_directory = mock.Mock(return_value="/tmp/logs/")
-        cls.config.respect_puppet = mock.Mock(return_value=True)
-        cls.config.get_puppet_state_file_path = mock.Mock(return_value="/tmp/deployd")
-        ensure_dirs(cls.config)
+    def setUp(self):
+        self.estatus = mock.Mock()
+        self.estatus.load_envs = mock.Mock(return_value=None)
+        self.config = mock.Mock()
+        self.config.load_env_and_configs = mock.Mock()
+        self.config.get_agent_directory = mock.Mock(return_value="/tmp/deployd/")
+        self.config.get_builds_directory = mock.Mock(
+            return_value="/tmp/deployd/builds/"
+        )
+        self.config.get_log_directory = mock.Mock(return_value="/tmp/logs/")
+        self.config.respect_puppet = mock.Mock(return_value=True)
+        self.config.get_puppet_state_file_path = mock.Mock(return_value="/tmp/deployd")
+        ensure_dirs(self.config)
 
     @mock.patch("deployd.common.utils.IS_PINTEREST", False)
     def test_check_prereqs_not_pins(self):
-        first_run = False
-        result = check_prereqs(self.config, first_run)
+        result = check_prereqs(self.config)
         self.assertTrue(result)
 
     @mock.patch("deployd.common.utils.IS_PINTEREST", True)
@@ -55,10 +55,9 @@ class TestCommonUtils(TestCase):
         "deployd.common.utils.get_puppet_exit_code", new=mock.Mock(return_value=5)
     )
     def test_check_prereqs_no_failures(self):
-        first_run = True
-        first_puppet_run_result = check_first_puppet_run_success(self.config, first_run)
+        first_puppet_run_result = check_first_puppet_run_success(self.config)
         self.assertTrue(first_puppet_run_result)
-        result = check_prereqs(self.config, first_run)
+        result = check_prereqs(self.config)
         self.assertTrue(result)
 
     @mock.patch("deployd.common.utils.IS_PINTEREST", True)
@@ -70,8 +69,7 @@ class TestCommonUtils(TestCase):
         "deployd.common.utils.get_puppet_exit_code", new=mock.Mock(return_value=999)
     )
     def test_check_prereqs_no_exit_code_file(self):
-        first_run = True
-        result = check_prereqs(self.config, first_run)
+        result = check_prereqs(self.config)
         self.assertTrue(result)
 
     @mock.patch("deployd.common.utils.IS_PINTEREST", True)
@@ -83,10 +81,9 @@ class TestCommonUtils(TestCase):
         "deployd.common.utils.get_puppet_exit_code", new=mock.Mock(return_value=999)
     )
     def test_check_prereqs_with_failures(self):
-        first_run = True
-        first_puppet_run_result = check_first_puppet_run_success(self.config, first_run)
+        first_puppet_run_result = check_first_puppet_run_success(self.config)
         self.assertFalse(first_puppet_run_result)
-        result = check_prereqs(self.config, first_run)
+        result = check_prereqs(self.config)
         self.assertFalse(result)
 
     @mock.patch("deployd.common.utils.IS_PINTEREST", True)
@@ -98,15 +95,15 @@ class TestCommonUtils(TestCase):
         "deployd.common.utils.get_puppet_exit_code", new=mock.Mock(return_value=999)
     )
     def test_check_prereqs_no_state_file(self):
+        self.config.first_run = False
         self.config.get_puppet_state_file_path = mock.Mock(return_value=None)
-        first_run = False
-        result = check_prereqs(self.config, first_run)
+        result = check_prereqs(self.config)
         self.assertTrue(result)
 
     @mock.patch("deployd.common.utils.IS_PINTEREST", True)
     def test_check_prereqs_not_first_run(self):
-        first_run = False
-        result = check_prereqs(self.config, first_run)
+        self.config.first_run = False
+        result = check_prereqs(self.config)
         self.assertTrue(result)
 
 
