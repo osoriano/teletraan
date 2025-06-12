@@ -50,9 +50,6 @@ from deployd.types.deploy_goal import DeployGoal
 from deployd.types.ping_response import PingResponse
 
 # Default OpenTSDB server to send deploy info metric data
-TSD_HOST = "localhost"
-TSD_PORT = 18126
-TSD_TIMEOUT = 30
 DEPLOY_INFO_METRIC_NAME = "deploy.info"
 DEPLOY_INFO_METRIC_VALUE = 1
 
@@ -264,7 +261,10 @@ class DeployAgent(object):
         else:
             log.info("Failed to get response from server, exit.")
 
-        self._emit_deploy_info_metrics()
+        try:
+            self._send_deploy_info_metrics()
+        except Exception as e:
+            log.error(f"failed to send deploy info metrics: {e}")
 
     def serve_forever(self) -> None:
         log.info("Running deploy agent in daemon mode")
@@ -560,11 +560,12 @@ class DeployAgent(object):
                 )
             )
 
-    def _emit_deploy_info_metrics(self) -> None:
-        if not IS_PINTEREST:
-            return
+    def _send_deploy_info_metrics(self) -> None:
+        """
+        Emit deploy info metrics to the tsd server
+        """
         epoch_in_seconds = int(time.time())
-        puts = []
+        put_stmts = []
         for env_name, deploy_status in self._envs.items():
             report = deploy_status.report
             build_info = deploy_status.build_info
@@ -590,7 +591,7 @@ class DeployAgent(object):
                 )
                 continue
 
-            puts.append(
+            put_stmts.append(
                 f"put {DEPLOY_INFO_METRIC_NAME} "
                 f"{epoch_in_seconds} {DEPLOY_INFO_METRIC_VALUE} "
                 f"source=teletraan "
@@ -598,11 +599,20 @@ class DeployAgent(object):
                 f"commit_sha={build_info.build_commit}"
             )
 
+        if len(put_stmts) == 0:
+            return
+
+        # Add an empty statement to ensure the payload ends in a newline
+        put_stmts.append("")
+
+        tsd_host = self._config.get_tsd_host()
+        tsd_port = self._config.get_tsd_port()
+        tsd_timeout_seconds = self._config.get_tsd_timeout_seconds()
+
         sock = socket.socket()
-        sock.settimeout(TSD_TIMEOUT)
-        sock.connect((TSD_HOST, TSD_PORT))
-        payload = ("\n".join(puts) + "\n").encode("utf-8")
-        log.info(f"osorianolog sending metric payload: {payload}")
+        sock.settimeout(tsd_timeout_seconds)
+        sock.connect((tsd_host, tsd_port))
+        payload = "\n".join(put_stmts).encode("utf-8")
         sock.sendall(payload)
 
     @staticmethod
