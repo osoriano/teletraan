@@ -49,7 +49,6 @@ from deployd import __version__, IS_PINTEREST, MAIN_LOGGER
 from deployd.types.deploy_goal import DeployGoal
 from deployd.types.ping_response import PingResponse
 
-# Default OpenTSDB server to send deploy info metric data
 DEPLOY_INFO_METRIC_NAME = "deploy.info"
 DEPLOY_INFO_METRIC_VALUE = 1
 
